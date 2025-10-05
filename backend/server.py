@@ -4,8 +4,8 @@ import random
 import typing
 
 import fastapi
-import pydantic
 import google.genai
+import pydantic
 
 import kmeans
 
