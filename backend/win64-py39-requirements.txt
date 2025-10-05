@@ -32,7 +32,9 @@ colorama==0.4.6
     #   click
     #   uvicorn
 dnspython==2.7.0
-    # via email-validator
+    # via
+    #   email-validator
+    #   pymongo
 email-validator==2.3.0
     # via
     #   fastapi
@@ -91,6 +93,8 @@ pydantic-core==2.33.2
     # via pydantic
 pygments==2.19.2
     # via rich
+pymongo==4.15.2
+    # via -r requirements.in
 python-dotenv==1.1.1
     # via uvicorn
 python-multipart==0.0.20

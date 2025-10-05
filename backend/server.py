@@ -3,9 +3,11 @@ import os
 import random
 import typing
 
+import bson
 import fastapi
 import google.genai
 import pydantic
+import pymongo.mongo_client
 
 import kmeans
 
@@ -13,6 +15,12 @@ cities = None
 
 # Gemini connection
 gemini = google.genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+# DB connection
+mongo = pymongo.mongo_client.MongoClient(os.environ["MONGODB_URI"])
+mongo.admin.command('ping')  # ensure we are actually connected to the db
+def _get_networks_collection():
+    return mongo.get_database("hackthevalleyx").get_collection("networks")
 
 app = fastapi.FastAPI()
 
@@ -89,3 +97,29 @@ def _run_kmeans(options: _KMeansInput) -> _KMeansOutput:
         snappedLocations=snappedLocations,
         snappedNames=snappedNames,
     )
+
+
+class _Network(pydantic.BaseModel):
+    options: _KMeansInput
+    name: str = "Unnamed Network"
+    id: typing.Optional[typing.Annotated[str, pydantic.BeforeValidator(str)]] = pydantic.Field(alias="_id", default=None)
+
+@app.get("/api/networks")
+async def _list_networks() -> list[_Network]:
+    networks = _get_networks_collection()
+    return [_Network.model_validate(network) for network in networks.find()]
+
+@app.post("/api/networks")
+def post_mongo(network: _Network) -> _Network:
+    networks = _get_networks_collection()
+    result = networks.insert_one(network.model_dump())
+    network.id = str(result.inserted_id)
+    return network
+
+@app.delete("/api/networks/{id}")
+def delete_mongo(id: str):
+    networks = _get_networks_collection()
+    result = networks.delete_one({"_id": bson.ObjectId(id)})
+    if result.deleted_count == 0:
+        raise fastapi.HTTPException(status_code=404)
+    return fastapi.Response(status_code=204)
