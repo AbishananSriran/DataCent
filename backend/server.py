@@ -99,10 +99,21 @@ def _run_kmeans(options: _KMeansInput) -> _KMeansOutput:
     )
 
 
-class _Network(pydantic.BaseModel):
-    options: _KMeansInput
-    name: str = "Unnamed Network"
+class _NetworkInput(pydantic.BaseModel):
     id: typing.Optional[typing.Annotated[str, pydantic.BeforeValidator(str)]] = pydantic.Field(alias="_id", default=None)
+    user_id: int
+    project_name: str = "Unnamed Network"
+    client_nodes: list[tuple[float, float]]
+    data_center_guess: list[tuple[float, float]]
+    routing_guess: list[tuple[float, float]]
+    cloudflare_enabled: bool = False
+class _Network(_NetworkInput):
+    cloudflare_nodes: list[tuple[float, float]]
+    data_centers: list[tuple[float, float]]
+    routing: list[tuple[float, float]]
+    money_saved: float
+    kwh_saved: float
+    infrastructure_plan: str
 
 @app.get("/api/networks")
 async def _list_networks() -> list[_Network]:
@@ -110,16 +121,45 @@ async def _list_networks() -> list[_Network]:
     return [_Network.model_validate(network) for network in networks.find()]
 
 @app.post("/api/networks")
-def post_mongo(network: _Network) -> _Network:
+def _add_network(network: _Network) -> _Network:
     networks = _get_networks_collection()
     result = networks.insert_one(network.model_dump())
     network.id = str(result.inserted_id)
     return network
 
 @app.delete("/api/networks/{id}")
-def delete_mongo(id: str):
+def _remove_network(id: str):
     networks = _get_networks_collection()
     result = networks.delete_one({"_id": bson.ObjectId(id)})
     if result.deleted_count == 0:
         raise fastapi.HTTPException(status_code=404)
     return fastapi.Response(status_code=204)
+
+
+@app.post("/api/networks/upload")
+def _upload_network(network: _NetworkInput) -> _Network:
+    client_nodes = cloudflare_nodes if network.cloudflare_enabled else network.client_nodes
+    out = _run_kmeans(_KMeansInput(
+        locations=client_nodes,
+        k=len(network.data_center_guess) + len(network.routing_guess),
+        snapToCity=True,
+    ))
+
+    closest_count = {location: 0 for location in out.snappedLocations}
+    for client in network.client_nodes:
+        closest = min(out.snappedLocations, key=lambda location: kmeans._distance(location, client))
+        closest_count[closest] += 1
+    locations = sorted(closest_count, key=lambda location: closest_count[location], reverse=True)
+    data_centers = locations[:len(network.data_center_guess)]
+    routing = locations[len(network.data_center_guess):]
+    names = [name for name, location in zip(out.snappedNames, out.snappedLocations) if location in data_centers]
+
+    return _add_network(_Network(
+        **network.model_dump(),
+        cloudflare_nodes=cloudflare_nodes if network.cloudflare_enabled else [],
+        data_centers=data_centers,
+        routing=routing,
+        money_saved=0,
+        kwh_saved=0,
+        infrastructure_plan="none",
+    ))
