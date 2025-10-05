@@ -1,7 +1,13 @@
 import React from "react";
 import Navbar from "../components/Navbar";
+import { useUser } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
+import Footer from "../components/Footer";
 
 export default function Landing() {
+  const { user } = useUser();
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navbar */}
@@ -23,7 +29,7 @@ export default function Landing() {
               DataCent analyzes your enterprise's network traffic patterns to design infrastructure that's efficient, cost-effective, and environmentally sustainable.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg font-medium">
+              <button className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg font-medium" onClick={() => user.isLoggedIn ? navigate("/projects") : navigate("/login")}>
                 <span>Request Free Analysis</span>
                 <span className="inline-block w-5 h-5 border-r-2 border-t-2 border-white transform rotate-45"></span>
               </button>
@@ -86,8 +92,8 @@ export default function Landing() {
             <div className="text-gray-400">Total Cost Savings Delivered</div>
           </div>
           <div>
-            <div className="text-5xl font-bold mb-2">18M</div>
-            <div className="text-gray-400">Tons CO₂ Emissions Prevented</div>
+            <div className="text-5xl font-bold mb-2">18M KWh</div>
+            <div className="text-gray-400">Energy Saved, Helping the Planet</div>
           </div>
         </div>
       </section>
@@ -137,12 +143,14 @@ export default function Landing() {
             Get a free network traffic analysis and discover how much you could save with DataCent's intelligent infrastructure design.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <button className="bg-white text-blue-600 px-10 py-4 rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg font-semibold text-lg">
+            <button className="bg-white text-blue-600 px-10 py-4 rounded-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-lg font-semibold text-lg" onClick={() => { user.isLoggedIn ? navigate("/projects") : navigate("/login") }}>
               Get Free Analysis
             </button>
-            <button className="border-2 border-white text-white px-10 py-4 rounded-lg hover:bg-white/10 transition-all font-semibold text-lg">
-              Schedule Consultation
-            </button>
+              <button className="border-2 border-white text-white px-10 py-4 rounded-lg hover:bg-white/10 transition-all font-semibold text-lg">
+                <a
+              href="mailto:sales@datacent.io?subject=Network%20Consultation&body=I%20wanted%20to%20reach%20out%20to%20schedule%20a%20consultation%20regarding%20DataCent's%20services."
+            >Schedule Consultation</a>
+              </button>
           </div>
           <p className="text-blue-200 text-sm">
             Join 500+ enterprises saving millions while protecting the planet
@@ -151,16 +159,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-16 px-4 sm:px-6 lg:px-8 text-center">
-        <div className="flex justify-center items-center mb-6 space-x-2">
-          <img src="/logo.png" alt="DataCent Logo" className="h-10 w-10" />
-          <span className="text-2xl font-bold text-white">DataCent</span>
-        </div>
-        <p className="text-sm text-gray-400 mb-6">
-          Fast. Efficient. Kinda educational.
-        </p>
-        <p className="text-gray-500 text-sm">&copy; 2025 DataCent. All rights reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
