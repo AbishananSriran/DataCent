@@ -9,10 +9,7 @@ import pydantic
 
 import kmeans
 
-cities = {}
-with open("worldcities.csv", encoding="utf-8", newline="") as file:
-    for row in csv.DictReader(file):
-        cities[row["city_ascii"]] = (float(row["lat"]), float(row["lng"]))
+cities = None
 
 # Gemini connection
 gemini = google.genai.Client(api_key=os.environ["GEMINI_API_KEY"])
@@ -73,6 +70,14 @@ def _run_kmeans(options: _KMeansInput) -> _KMeansOutput:
     snappedNames = None
     snappedLocations = None
     if options.snapToCity:
+        global cities
+        if not cities:
+            new_cities = {}
+            with open("worldcities.csv", encoding="utf-8", newline="") as file:
+                for row in csv.DictReader(file):
+                    new_cities[row["city_ascii"]] = (float(row["lat"]), float(row["lng"]))
+            cities = new_cities
+
         snappedNames = [
             min(cities, key=lambda name: kmeans._distance(cities[name], mean))
             for mean in means
