@@ -2,6 +2,7 @@ import csv
 import os
 import random
 import typing
+import json
 
 import bson
 import fastapi
@@ -12,6 +13,7 @@ import pymongo.mongo_client
 import kmeans
 
 cities = None
+cloudflare_nodes = None
 
 # Gemini connection
 gemini = google.genai.Client(api_key=os.environ["GEMINI_API_KEY"])
@@ -138,6 +140,11 @@ def _remove_network(id: str):
 
 @app.post("/api/networks/upload")
 def _upload_network(network: _NetworkInput) -> _Network:
+    global cloudflare_nodes
+    if network.cloudflare_enabled and not cloudflare_nodes:
+        with open("cloudflare.json", encoding="utf-8") as file:
+            cloudflare_nodes = [(info["lat"], info["lon"]) for info in json.load(file)]
+
     client_nodes = cloudflare_nodes if network.cloudflare_enabled else network.client_nodes
     out = _run_kmeans(_KMeansInput(
         locations=client_nodes,
