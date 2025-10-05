@@ -6,7 +6,7 @@ const Footer = () => {
           <span className="text-2xl font-bold text-white">DataCent</span>
         </div>
         <p className="text-sm text-gray-400 mb-6">
-          Fast. Efficient. Kinda educational.
+            Connect the People - Connect the World.
         </p>
         <p className="text-gray-500 text-sm">&copy; 2025 DataCent. All rights reserved.</p>
       </footer>

@@ -182,7 +182,8 @@ export default function ReportPage() {
 
         <div className="flex flex-col lg:flex-row gap-8 mb-12 max-w-7xl mx-auto">
             {/* Final Report */}
-            <div className="flex-[1.25] bg-white/10 backdrop-blur-lg border border-white/10 p-12 rounded-2xl shadow-2xl text-gray-100 prosem">
+            <div className="flex-[1.25] bg-white/10 backdrop-blur-lg border border-white/10 p-12 rounded-2xl shadow-2xl text-gray-100 prosem 
+                  max-h-[80vh] overflow-y-auto">
                 <h2 className="text-xl font-bold mb-4 text-yellow-400">Final Report</h2>
                 {infrastructure_plan.split("\n").map((para, idx) =>
                 para.trim() ? <p key={idx}>{para.trim()}</p> : <br />

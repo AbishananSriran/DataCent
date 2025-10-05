@@ -16,7 +16,11 @@ export default function Navbar() {
 
       {/* Navigation links */}
       <div className="flex items-center space-x-4">
-        <Link to="/" className="hover:underline">Home</Link>
+        {user.isLoggedIn ? (
+            <Link to="/home" className="hover:underline">Home</Link>
+        ) : (
+            <Link to="/" className="hover:underline">Home</Link>
+        )}
         {user.isLoggedIn ? (
           <button
             onClick={() => {
