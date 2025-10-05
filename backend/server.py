@@ -165,6 +165,12 @@ def _upload_network(network: _NetworkInput) -> _Network:
     routing = locations[len(network.data_center_guess):]
     names = [name for name, location in zip(out.snappedNames, out.snappedLocations) if location in data_centers]
 
+    score_kmeans = kmeans.k_means_score(client_nodes, out.snappedLocations)
+    score_guess = kmeans.k_means_score(client_nodes, network.data_center_guess + network.routing_guess)
+    saved = max(0, score_guess - score_kmeans)
+    money_saved = round(saved * 1e7, 1)
+    kwh_saved = round(saved * 2.25e9, 1)
+
     infrastructure_plan = _analyze_location(_AnalyzeLocationInput(
         name=" and ".join(names)
     )).text
@@ -174,7 +180,7 @@ def _upload_network(network: _NetworkInput) -> _Network:
         cloudflare_nodes=cloudflare_nodes if network.cloudflare_enabled else [],
         data_centers=data_centers,
         routing=routing,
-        money_saved=0,
-        kwh_saved=0,
+        money_saved=money_saved,
+        kwh_saved=kwh_saved,
         infrastructure_plan=infrastructure_plan,
     ))
