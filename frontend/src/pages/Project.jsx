@@ -116,14 +116,9 @@ const [typedText2, setTypedText2] = useState("");
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            "_id": 1,
+            "user_id": 1,
             "project_name": networkName,
-            "client_nodes": [
-                [
-                null,
-                null
-                ]
-            ],
+            "client_nodes": markers.map((m) => [m.lat, m.lng]),
             "data_center_guess": dataCenterMarkers.map((dc) => [dc.lat, dc.lng]),
             "routing_guess": routingMarkers.map((rm) => [rm.lat, rm.lng]),
             "cloudflare_enabled": false,
