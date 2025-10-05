@@ -4,14 +4,18 @@ import { Button } from "../components/Button";
 import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 import { BigButton } from "../components/BigButton";
 import '../App.css'; // Import the CSS file for animations
+import { useCurrentPlan } from "../context/CurrentPlanContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Project() {
+    const navigate = useNavigate();
   const [step, setStep] = useState(-1);
 const [showSecondLine, setShowSecondLine] = useState(false);
 const [showButton, setShowButton] = useState(false);
 const [typedText1, setTypedText1] = useState("");
 const [typedText2, setTypedText2] = useState("");
 
+ const { setCurrentPlan } = useCurrentPlan();
 
   // Step 1
   const [networkName, setNetworkName] = useState("My Network Project");
@@ -47,15 +51,17 @@ const [typedText2, setTypedText2] = useState("");
         let j = -1;
 
         // Reset state each time we enter pre-step
-        setTypedText1("");
-        setTypedText2("");
+        setTypedText1("W");
+        setTypedText2("R");
         setShowSecondLine(false);
         setShowButton(false);
 
         // Type first line
         const typeLine1 = setInterval(() => {
         if (i < line1.length-1) {
-            setTypedText1((prev) => prev + line1[i]);
+            if (i >= 0) {
+                setTypedText1((prev) => prev + line1[i]);
+            }
             i++;
         } else {
             clearInterval(typeLine1);
@@ -65,8 +71,10 @@ const [typedText2, setTypedText2] = useState("");
             setShowSecondLine(true);
             const typeLine2 = setInterval(() => {
                 if (j < line2.length-1) {
-                setTypedText2((prev) => prev + line2[j]);
-                j++;
+                    if (j >= 0) {
+                        setTypedText2((prev) => prev + line2[j]);
+                    }
+                    j++;
                 } else {
                 clearInterval(typeLine2);
                 // Finally show the button after a short delay
@@ -109,10 +117,11 @@ const [typedText2, setTypedText2] = useState("");
   };
 
   // Finish setup
-  const handleFinish = () => {
+  const handleFinish = async () => {
     setSubmitted(true);
+    setStep(4);
 
-    fetch(`${process.env.REACT_APP_BACKEND_URL}/api/networks/upload/`, {
+    const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/networks/upload/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -121,11 +130,30 @@ const [typedText2, setTypedText2] = useState("");
             "client_nodes": markers.map((m) => [m.lat, m.lng]),
             "data_center_guess": dataCenterMarkers.map((dc) => [dc.lat, dc.lng]),
             "routing_guess": routingMarkers.map((rm) => [rm.lat, rm.lng]),
-            "cloudflare_enabled": false,
+            "cloudflare_enabled": useCloudflare,
         })
-    });
+    })
 
-    setStep(4);
+    if (res.ok) {
+        const body = await res.json();
+
+        setCurrentPlan({
+            project_name: body.project_name,
+            client_nodes: body.client_nodes,
+            cloudflare_nodes: body.cloudflare_nodes,
+            data_centers: body.data_centers,
+            routing: body.routing,
+            money_saved: body.money_saved,
+            kwh_saved: body.kwh_saved,
+            infrastructure_plan: body.infrastructure_plan,
+        });
+
+        navigate(`/reports/${body._id}`);
+    } else {
+        console.error("Failed to submit project");
+        setSubmitted(false);
+        setStep(3); // Go back to previous step
+    }
   };
 
   return (
@@ -161,7 +189,7 @@ const [typedText2, setTypedText2] = useState("");
             <BigButton
                 onClick={() => setStep(0)}
             >
-            Begin Setup 🚀
+                Begin Setup 🚀
             </BigButton>
         </div>
         )}
