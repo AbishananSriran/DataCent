@@ -112,7 +112,7 @@ const [typedText2, setTypedText2] = useState("");
   const handleFinish = () => {
     setSubmitted(true);
 
-    fetch(`${process.env.REACT_APP_BACKEND_URL}/api/networks`, {
+    fetch(`${process.env.REACT_APP_BACKEND_URL}/api/networks/upload/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
