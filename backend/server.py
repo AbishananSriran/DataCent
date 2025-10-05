@@ -30,7 +30,7 @@ class _AnalyzeLocationInput(pydantic.BaseModel):
 class _AnalyzeLocationOutput(pydantic.BaseModel):
     text: str
 @app.post("/api/analyze-location")
-async def _analyze_location(options: _AnalyzeLocationInput) -> _AnalyzeLocationOutput:
+def _analyze_location(options: _AnalyzeLocationInput) -> _AnalyzeLocationOutput:
     prompt = options.prompt
     if prompt is None:
         prompt = f"I am building a data center at {options.name}. What are some regulations I might need to overcome?"
@@ -154,6 +154,10 @@ def _upload_network(network: _NetworkInput) -> _Network:
     routing = locations[len(network.data_center_guess):]
     names = [name for name, location in zip(out.snappedNames, out.snappedLocations) if location in data_centers]
 
+    infrastructure_plan = _analyze_location(_AnalyzeLocationInput(
+        name=", ".join(names)
+    )).text
+
     return _add_network(_Network(
         **network.model_dump(),
         cloudflare_nodes=cloudflare_nodes if network.cloudflare_enabled else [],
@@ -161,5 +165,5 @@ def _upload_network(network: _NetworkInput) -> _Network:
         routing=routing,
         money_saved=0,
         kwh_saved=0,
-        infrastructure_plan="none",
+        infrastructure_plan=infrastructure_plan,
     ))
