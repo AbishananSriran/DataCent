@@ -168,8 +168,8 @@ def _upload_network(network: _NetworkInput) -> _Network:
     score_kmeans = kmeans.k_means_score(client_nodes, out.snappedLocations)
     score_guess = kmeans.k_means_score(client_nodes, network.data_center_guess + network.routing_guess)
     saved = max(0, score_guess - score_kmeans)
-    money_saved = round(saved * 1e7, 1)
-    kwh_saved = round(saved * 2.25e9, 1)
+    money_saved = round(saved * 1e7)
+    kwh_saved = round(saved * 2.24819172382e9)
 
     infrastructure_plan = _analyze_location(_AnalyzeLocationInput(
         name=" and ".join(names)
