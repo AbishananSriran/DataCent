@@ -19,6 +19,13 @@ def k_means_once(locations: list[tuple[float, float]], means: list[tuple[float, 
         bests[best].append(location)
     return [_mean(locations) for locations in bests.values()]
 
+def k_means_score(locations: list[tuple[float, float]], means: list[tuple[float, float]]) -> float:
+    score = 0.0
+    for location in locations:
+        best = min(means, key=lambda mean: _distance(mean, location))
+        score += _distance(best, location)
+    return score
+
 def _random(k: int) -> list[tuple[float, float]]:
     locations = set()
     while len(locations) < k:
