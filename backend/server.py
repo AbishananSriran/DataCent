@@ -1,8 +1,8 @@
 import csv
+import json
 import os
 import random
 import typing
-import json
 
 import bson
 import fastapi
@@ -162,7 +162,7 @@ def _upload_network(network: _NetworkInput) -> _Network:
     names = [name for name, location in zip(out.snappedNames, out.snappedLocations) if location in data_centers]
 
     infrastructure_plan = _analyze_location(_AnalyzeLocationInput(
-        name=", ".join(names)
+        name=" and ".join(names)
     )).text
 
     return _add_network(_Network(
