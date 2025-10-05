@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import random
+import time
 import typing
 
 import bson
@@ -67,6 +68,7 @@ def _run_kmeans(options: _KMeansInput) -> _KMeansOutput:
         raise ValueError("ensure k <= len(locations)")
 
     best = (9e999, [])
+    start = time.monotonic()
     for _ in range(30):
         try:
             for _ in range(50):
@@ -76,6 +78,8 @@ def _run_kmeans(options: _KMeansInput) -> _KMeansOutput:
         else:
             score = kmeans.k_means_score(locations, means)
             best = max(best, (score, means))
+        if time.monotonic() >= start + 10:
+            break
 
     snappedNames = None
     snappedLocations = None
